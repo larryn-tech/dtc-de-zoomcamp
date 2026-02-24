@@ -104,7 +104,7 @@ terraform init
 ```
 Terraform will download and install the providers defined in the configuration files into the current directory.
 
-The configuration can be validatted with the following command:
+The configuration can be validated with the following command:
 ```shell
 terraform validate
 ```
@@ -123,7 +123,7 @@ Once completed, we'll see the following message in the terminal:
 Apply complete! Resources: 1 added, 0 changed, 0 destroyed.
 ```
 
-After applying the configuration, we'll see that Terraform created a `terraform.tfstate` file in the current directory. The state file keeps a snapshot of the current infrastructure and compares it to the configuration files to determine what changes are needed to reah the desired state. 
+After applying the configuration, we'll see that Terraform created a `terraform.tfstate` file in the current directory. The state file keeps a snapshot of the current infrastructure and compares it to the configuration files to determine what changes are needed to reach the desired state. 
 
 By default, the state file is stored locally. Because it can contain sensitive information, such as passwords or security keys, the state file should be stored securely. In addition, add `*.tfstate` and `.terraform/` to your `.gitignore`.
 

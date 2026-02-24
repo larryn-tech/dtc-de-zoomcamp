@@ -23,7 +23,7 @@ Docker packages applications and dependencies into **containers** that run relia
 * `docker compose down`: Stop and remove all containers, networks, and volumes created by `docker compose up`.
 
 ## 🏗️ Terraform
-Terraform is an **Infrastructure as Code (IaC)** tool that allows us to build, version, and manage cloud and on-premise resources using human-readable configuration files. It uses a declarative approach that allows users to define the desired final state of their infrastructure, rather than providing step-by-step instructions on how to achieve it. Much like Docker provides consistency for application environments, Terraform ensures consistent, scalable, and sharable infrastructure across teams.
+Terraform is an **Infrastructure as Code (IaC)** tool that allows us to build, version, and manage cloud and on-premise resources using human-readable configuration files. It uses a declarative approach that allows users to define the desired final state of their infrastructure, rather than providing step-by-step instructions on how to achieve it. Much like Docker provides consistency for application environments, Terraform ensures consistent, scalable, and shareable infrastructure across teams.
 
 **Key Components**:
 * **Configuration files**: `.tf` files where infrastructure is declared.
