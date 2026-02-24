@@ -41,10 +41,10 @@ Default output format [None]: json
 ```
 
 ## Basic Infrastructure Setup
-In this section, we use Terraform to provision an EC2 instance on AWS.
+In this section (`02-terraform-overview`), we will use Terraform to provision an EC2 instance on AWS.
 
 ### Create configuration files
-In a new directory (ex. `02-basic-setup`), we'll write our configuration files. 
+In a new directory (ex. `02-terraform-overview`), we'll write our configuration files. 
 
 The `terraform {}` block within the `terraform.tf` file configures Terraform and specifies that we are using AWS as a provider.
 
@@ -98,7 +98,7 @@ Any modified files will be printed in the terminal.
 
 ### Create infrastructure
 
-To begin, we must initialize our Terraform workspace. While in the working directory (ex. `02-basic-setup`), enter the following command in the terminal:
+To begin, we must initialize our Terraform workspace. While in the working directory (ex. `02-terraform-overview`), enter the following command in the terminal:
 ```shell
 terraform init
 ```
