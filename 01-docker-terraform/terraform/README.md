@@ -257,3 +257,107 @@ Do you want to copy existing state to the new backend?
 Enter `yes` to copy the state file to the S3 bucket.
 
 When we navigate to the S3 console, we should see a `terraform.tf` object within our bucket.
+
+### Delete resources
+
+Running `terraform destroy` while connected to the remote backend can cause some errors as Terraform will no longer be able to save the state to the now destroyed S3 bucket where we stored our `terraform.tfstate` file. We will need to pull the latest state from our remote backend and revert to using a local backend before destroying everything.
+
+Before running `terraform destroy`:
+ 1. Run the following to download the state file from the remote backend
+
+```hcl
+terraform state pull > terraform.tfstate
+```
+
+ 2. Comment out the `backend {}` block in the `terraform.tf` file to switch back to using local backend
+ 3. Run `terraform init -migrate-state`
+ 4. Run `terraform destroy`
+
+## Variables and Outputs
+
+### Variable Types
+
+**Input variables** parameterize a Terraform configuration, allowing users to customize behavior without changing the source code. They are declared using the `variable {}` block and can be referenced using `var.<name>`.
+
+```hcl
+variable "instance_type" {
+  description = "ec2 instance type"
+  type = string
+  default = "t3.micro"
+}
+```
+
+**Local variables** assign a name to an expression's result, allowing that result to be used multiple times within a module to avoid repetition and improve readability. They are declared using the `locals {}` block and can be referenced using `local.<name>`.
+
+```hcl
+locals {
+  service_name = "My Service"
+  owner = "My Company"
+}
+```
+
+**Output variables** function like return values in programming languages, allowing you to expose data about the resources you create. They can be used to print values after running `terraform apply` or be consumed elsewhere in a configuration file. They are declared using the `output {}` block and can be referenced using `local.<name>`.
+
+```hcl
+output "instance_ip_addr" {
+  value = aws_instance.instance.public_ip
+}
+```
+
+### Setting input variables
+
+Terraform uses the following order of precedence when assigning a value to a variable:
+
+1. Command line using `-var` or `-var-file` parameters
+2. `*.auto.tfvars` file
+3. `terraform.tfvars` file
+4. `TF_VAR_<name>` environment variables
+5. `default` value in the `variable {}` block
+
+### Types and Validation
+
+Variables can hold a variety of value types:
+
+| Primitive Types | Complex Types |
+| -               | -             |
+| string          | list          |
+| number          | set           |
+| bool            | map           |
+|                 | object        |
+|                 | tuple         |
+
+Type checking happens automatically and custom conditions can be enforced.
+
+### Managing sensitive data
+
+Variables can be marked as sensitive by adding the `sensitive` argument to `variable {}` or `output {}` blocks. 
+
+```hcl
+variable "database_password" {
+  description = "Password for the database instance"
+  type        = string
+  sensitive   = true
+}
+```
+
+We could pass in the variable at runtime. For example:
+
+```shell
+terraform apply -var="database_password=S3CR3T_P455W0RD"
+```
+
+Doing so causes Terraform to redact those values from the CLI output. 
+
+```
+Apply complete! Resources: 1 added, 0 changed, 0 destroyed.
+
+Outputs:
+
+database_password = (sensitive value)
+```
+
+Variables can also be passed to `terraform apply` with:
+- `TV_VAR_<variable>`
+- `var` (retrieved from secret manager at runtime)
+
+We can also use an external secret store, such as AWS Secrets Manager.
