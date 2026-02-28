@@ -6,17 +6,29 @@ variable "region" {
   default     = "us-west-1"
 }
 
+variable "my_ip" {
+  description = "Your IP address for SSH"
+  type        = string
+  sensitive   = true
+}
+
 
 # VPC Variables
 
-variable "cidr_block" {
+variable "vpc_cidr_block" {
   description = "VPC IP range"
   type        = string
   default     = "10.0.0.0/16"
 }
 
-variable "subnet_cidrs" {
-  description = "Subnet CIDR values"
+variable "public_subnet_cidr" {
+  description = "Public subnet CIDR range"
+  type        = string
+  default     = "10.0.0.0/24"
+}
+
+variable "private_subnet_cidrs" {
+  description = "Private subnet CIDR ranges"
   type        = list(string)
   default     = ["10.0.1.0/24", "10.0.2.0/24"]
 }
@@ -44,7 +56,7 @@ variable "instance_type" {
 variable "instance_name" {
   description = "EC2 instance name"
   type        = string
-  default     = "ln_instance"
+  default     = "ln_web_server"
 }
 
 # S3 Variables
@@ -72,6 +84,7 @@ variable "db_name" {
 variable "db_user" {
   description = "Username for DB"
   type        = string
+  sensitive   = true
 }
 
 variable "db_pass" {
@@ -83,5 +96,5 @@ variable "db_pass" {
 variable "db_sg_port" {
   description = "DB security group port"
   type        = string
-  default     = 3306
+  default     = 5432
 }

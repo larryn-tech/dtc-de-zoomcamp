@@ -226,3 +226,8 @@ terraform.rc
 
 # macOS
 .DS_Store
+
+# SSH keys
+.ssh/
+*.pem
+*.pub
