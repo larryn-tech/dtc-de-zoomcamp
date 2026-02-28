@@ -225,7 +225,7 @@ We'll update the `terraform.tf` file to include `backend {}` block within the `t
 
 terraform {
   required_providers {
-    [...]
+    # [...]
   }
 
   backend "s3" {
@@ -340,7 +340,7 @@ variable "database_password" {
 }
 ```
 
-We could pass in the variable at runtime. For example:
+We can pass the variable at runtime. For example:
 
 ```shell
 terraform apply -var="database_password=S3CR3T_P455W0RD"
@@ -364,16 +364,17 @@ We can also use an external secret store, such as AWS Secrets Manager.
 
 ### Variables Demo
 
-`04-variables-and-outputs` contains the configuration and variable files for an infructure that features an EC2 and Amazon Relational Database Service (RDS) instance inside of a custom virtual private cloud (VPC). The architecture and code is based on this [Medium article](https://medium.com/strategio/using-terraform-to-create-aws-vpc-ec2-and-rds-instances-c7f3aa416133) by Matt Little.
+`04-variables-and-outputs` contains the configuration and variable files for an infrastructure that features an EC2 and Amazon Relational Database Service (RDS) instance inside of a custom virtual private cloud (VPC). The architecture and code is based on this [Medium article](https://medium.com/strategio/using-terraform-to-create-aws-vpc-ec2-and-rds-instances-c7f3aa416133) by Matt Little.
 
 ![Architecture diagram](https://miro.medium.com/v2/resize:fit:720/format:webp/1*Oxp7FZT4Z9RWqpnJn-hHqw.png)
+
 *Image courtesy of [Matt Little](https://github.com/dispact/terraform-custom-vpc)*
 
-We can access the EC2 instance via SSH. From there, we'll be able to connect to the Postgre database.
+We can access the EC2 instance via SSH. From there, we'll be able to connect to the Postgres database.
 
 The `.gitignore` file was updated to include the following:
 
-```
+```gitignore
 # gitignore
 
 # Terraform 
@@ -402,7 +403,7 @@ export TF_VAR_db_pass="SecretPassword1"
 
 #### Creating SSH key pair
 
-To securely connect to our "web server" EC2 instance via SSH, we'll need to generate a key pair. In the our project directory (ex. `04-variables-and-outputs`), enter the following commands into the terminal:
+To securely connect to our "web server" EC2 instance via SSH, we'll need to generate a key pair. In our project directory (ex. `04-variables-and-outputs`), enter the following commands into the terminal:
 
 ```shell
 # Generate authentication keys for SSH
@@ -431,9 +432,9 @@ and associate the key pair with the EC2 instance.
 # main.tf
 
 resource "aws_instance" "ln_web_server" {
-  [...]
+  # [...]
   key_name                    = aws_key_pair.ln_ec2_kp.key_name
-  [...]
+  # [...]
 }
 ```
 
