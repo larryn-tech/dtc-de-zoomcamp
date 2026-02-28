@@ -296,7 +296,7 @@ locals {
 }
 ```
 
-**Output variables** function like return values in programming languages, allowing you to expose data about the resources you create. They can be used to print values after running `terraform apply` or be consumed elsewhere in a configuration file. They are declared using the `output {}` block and can be referenced using `local.<name>`.
+**Output variables** function like return values in programming languages, allowing you to expose data about the resources you create. They can be used to print values after running `terraform apply` or be consumed elsewhere in a configuration file. They are declared using the `output {}` block and can be called using `terraform output <variable>`.
 
 ```hcl
 output "instance_ip_addr" {
@@ -357,7 +357,110 @@ database_password = (sensitive value)
 ```
 
 Variables can also be passed to `terraform apply` with:
-- `TV_VAR_<variable>`
+- `TF_VAR_<variable>`
 - `var` (retrieved from secret manager at runtime)
 
 We can also use an external secret store, such as AWS Secrets Manager.
+
+### Variables Demo
+
+`04-variables-and-outputs` contains the configuration and variable files for an infructure that features an EC2 and Amazon Relational Database Service (RDS) instance inside of a custom virtual private cloud (VPC). The architecture and code is based on this [Medium article](https://medium.com/strategio/using-terraform-to-create-aws-vpc-ec2-and-rds-instances-c7f3aa416133) by Matt Little.
+
+![Architecture diagram](https://miro.medium.com/v2/resize:fit:720/format:webp/1*Oxp7FZT4Z9RWqpnJn-hHqw.png)
+*Image courtesy of [Matt Little](https://github.com/dispact/terraform-custom-vpc)*
+
+We can access the EC2 instance via SSH. From there, we'll be able to connect to the Postgre database.
+
+The `.gitignore` file was updated to include the following:
+
+```
+# gitignore
+
+# Terraform 
+*.tfvars
+
+# SSH keys
+.ssh
+*.pem
+*.pub
+```
+#### Secrets file and environment variable
+
+Create a `terraform.tfvars` file to assign values to our database input variables:
+
+```hcl
+# terraform.tfvars
+db_name       = "mydb"
+db_user       = "root"
+my_ip         = "<your_ip_address>"
+```
+
+Set the environment variable for `db_pass` by running the following command in the terminal:
+```shell
+export TF_VAR_db_pass="SecretPassword1"
+```
+
+#### Creating SSH key pair
+
+To securely connect to our "web server" EC2 instance via SSH, we'll need to generate a key pair. In the our project directory (ex. `04-variables-and-outputs`), enter the following commands into the terminal:
+
+```shell
+# Generate authentication keys for SSH
+ssh-keygen -t rsa -b 4096 -m PEM -f .ssh/ec2_kp
+
+# Convert private key to .pem filetype
+openssl rsa -in .ssh/ec2_kp -out .ssh/ec2_kp.pem
+
+# Make the private key read-only for key owner
+chmod 400 .ssh/ec2_kp.pem
+```
+In `main.tf`, we'll import the public key into AWS
+
+```hcl
+# main.tf
+
+resource "aws_key_pair" "ln_ec2_kp" {
+  key_name   = "ln_ec2_kp"
+  public_key = file(".ssh/ec2_kp.pub")
+}
+```
+
+and associate the key pair with the EC2 instance.
+
+```hcl
+# main.tf
+
+resource "aws_instance" "ln_web_server" {
+  [...]
+  key_name                    = aws_key_pair.ln_ec2_kp.key_name
+  [...]
+}
+```
+
+#### Connect to EC2 and RDS instances
+
+Run `terraform init`, `terraform plan` and `terraform apply` to create our resources. Once complete, note the `rds_endpoint = <rds_instance_hostname>` that is displayed in the terminal. We will need this value soon.
+
+We should now be able to SSH into the EC2 instance.
+
+```shell
+ssh -i .ssh/ec2_kp.pem  ubuntu@$(terraform output -raw web_public_dns)
+```
+
+Once connected to the instance, install `psql` (a terminal-based front-end for PostgreSQL).
+
+```shell
+sudo apt install postgresql-client
+```
+
+Use the `<rds_instance_hostname>` value mentioned above and connect to our RDS instance with the following command:
+
+```shell
+psql -h <rds_instance_hostname> -p 5432 -d mydb -U root          
+```
+
+Upon a successful connection, your terminal prompt will change (ex. to `mydb=>`), and you can run SQL commands.
+
+Enter `\q` to quit the RDS connection, and then `exit` to quit the EC2 connection.
+
+Run `terraform destroy`.
